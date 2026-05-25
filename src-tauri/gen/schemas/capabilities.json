@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Default permissions for ModelRouter","local":true,"windows":["main"],"permissions":["core:default","fs:default","fs:allow-read-text-file","fs:allow-write-text-file","fs:allow-exists","fs:allow-home-read","fs:allow-home-write","dialog:default","shell:default","store:default"]}}
