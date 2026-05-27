@@ -6,7 +6,6 @@ dist/
 
 # Rust / Tauri
 src-tauri/target/
-src-tauri/icons/icon.png
 
 # IDE
 .vscode/
