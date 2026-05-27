@@ -25,6 +25,7 @@ regex = "1"
 dirs = "5"
 anyhow = "1"
 thiserror = "1"
+reqwest = { version = "0.12", features = ["rustls-tls", "json"], default-features = false }
 
 [features]
 default = ["custom-protocol"]
