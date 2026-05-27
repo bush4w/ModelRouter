@@ -9,6 +9,38 @@ use crate::models::RoleInfo;
 pub fn parse_claude_md(content: &str) -> Vec<RoleInfo> {
     let mut roles = Vec::new();
 
+    // Pre-parse skills from modelrouter-skills comments
+    let skills_re = Regex::new(
+        r"<!-- modelrouter-skills:\s*(.+?)\s*-->"
+    ).unwrap();
+    let mut explicit_skills: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
+    for cap in skills_re.captures_iter(content) {
+        let skills_str = cap[1].to_string();
+        // Try to associate with the nearest preceding role row
+        // We'll match by position — find the closest role name before this comment
+        let comment_pos = cap.get(0).unwrap().start();
+        let before = &content[..comment_pos];
+        // Find the last role name in a table row before this comment
+        let row_re = Regex::new(r"\|\s*(.+?)\s*\|").unwrap();
+        let mut last_role: Option<String> = None;
+        for row_cap in row_re.captures_iter(before) {
+            let candidate = row_cap[1].trim().to_string();
+            if candidate != "角色" && candidate != "花名" && candidate != "角色名字"
+                && !candidate.chars().all(|c| c == '-')
+            {
+                last_role = Some(candidate);
+            }
+        }
+        if let Some(role_name) = last_role {
+            let skills: Vec<String> = skills_str
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect();
+            explicit_skills.insert(role_name, skills);
+        }
+    }
+
     // Strategy 1: Table rows like "| 项目经理 | 周明 | 统筹大局 |"
     let table_re = Regex::new(
         r"\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|"
@@ -19,12 +51,21 @@ pub fn parse_claude_md(content: &str) -> Vec<RoleInfo> {
         let alias = cap[2].trim().to_string();
         let description = cap[3].trim().to_string();
 
-        // Skip header rows
-        if role_name == "角色" || role_name == "花名" || role_name == "---" {
+        // Skip header rows, separator rows, and non-role content
+        if role_name == "角色" || role_name == "花名" || role_name == "角色名字"
+            || role_name == "岗位" || role_name == "任务类型"
+            || role_name == "推荐模型" || role_name == "提供商"
+            || role_name == "组件" || role_name == "选型"
+            || role_name.chars().all(|c| c == '-')
+            || !is_role_name(&role_name)
+        {
             continue;
         }
 
-        let skills = infer_skills(&role_name);
+        let skills = explicit_skills
+            .get(&role_name)
+            .cloned()
+            .unwrap_or_else(|| infer_skills(&role_name));
         roles.push(RoleInfo {
             name: role_name,
             alias: Some(alias),
@@ -36,13 +77,13 @@ pub fn parse_claude_md(content: &str) -> Vec<RoleInfo> {
 
     // Strategy 2: Header-style roles like "## 管理与协调" or "## 研发岗"
     if roles.is_empty() {
-        parse_header_roles(content, &mut roles);
+        parse_header_roles(content, &mut roles, &explicit_skills);
     }
 
     roles
 }
 
-fn parse_header_roles(content: &str, roles: &mut Vec<RoleInfo>) {
+fn parse_header_roles(content: &str, roles: &mut Vec<RoleInfo>, explicit_skills: &std::collections::HashMap<String, Vec<String>>) {
     // Find sections with role definitions using patterns like:
     // "### 项目经理" or "**项目经理**"
     let section_re = Regex::new(
@@ -54,7 +95,10 @@ fn parse_header_roles(content: &str, roles: &mut Vec<RoleInfo>) {
         // Look for role-like names in section headers
         if is_role_name(&title) {
             let description = find_description_after(content, cap.get(0).unwrap().end());
-            let skills = infer_skills(&title);
+            let skills = explicit_skills
+                .get(&title)
+                .cloned()
+                .unwrap_or_else(|| infer_skills(&title));
             roles.push(RoleInfo {
                 name: title,
                 alias: None,

@@ -26,6 +26,9 @@ Thumbs.db
 credentials*
 secret*
 
+# Management docs (local only, never push)
+management-docs/
+
 # Temp files
 *.ps1
 !setup-*.ps1

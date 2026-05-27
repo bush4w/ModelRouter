@@ -8,13 +8,31 @@ export interface RoleInfo {
 }
 
 // AI 模型提供商
-export type ModelProvider = "anthropic" | "openai" | "gemini" | "deepseek" | "qwen" | "custom";
+export type ModelProvider =
+  | "anthropic"
+  | "openai"
+  | "gemini"
+  | "deepseek"
+  | "minimax"
+  | "kimi"
+  | "zhipu"
+  | "stepfun"
+  | "bailian"
+  | "longcat"
+  | "xiaomimimo"
+  | "baidu"
+  | "openrouter"
+  | "siliconflow"
+  | "nvidia"
+  | "modelscope"
+  | "custom";
 
 // 模型信息
 export interface ModelInfo {
   id: string;            // 模型 ID（如 "claude-opus-4-7"）
   name: string;          // 显示名称
   provider: ModelProvider;
+  family: string;        // 模型族（如 "claude", "gpt", "gemini"）
   contextLength: number; // 上下文长度
   capabilities: string[]; // 能力标签
   costPer1K?: {
@@ -72,6 +90,14 @@ export interface UserChoice {
   rejectedModels: string[];
   feedback?: number;     // 1-5 评分
   timestamp: string;
+}
+
+// API 配置模板
+export interface ApiProfile {
+  id: string;
+  name: string;
+  isDefault: boolean;
+  createdAt: string;
 }
 
 // 应用设置

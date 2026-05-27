@@ -1,8 +1,10 @@
 import { useAppStore } from "../store";
 import type { RoleInfo } from "../types";
+import { ListIcon, PlusIcon } from "./Icons";
 
 interface RoleListProps {
   roles: RoleInfo[];
+  onNewRole?: () => void;
 }
 
 function getRoleIcon(name: string): string {
@@ -24,13 +26,16 @@ function getRoleIcon(name: string): string {
   return map[name] || "👤";
 }
 
-export default function RoleList({ roles }: RoleListProps) {
+export default function RoleList({ roles, onNewRole }: RoleListProps) {
   const { selectedRole, selectRole } = useAppStore();
 
   if (roles.length === 0) {
     return (
       <div className="role-list">
-        <div className="role-list-title">📋 角色列表</div>
+        <div className="role-list-title">
+          <ListIcon size={13} />
+          角色列表
+        </div>
         <div className="empty-state">
           暂无角色定义<br />
           请在设置中配置 Claude.md 路径
@@ -41,7 +46,10 @@ export default function RoleList({ roles }: RoleListProps) {
 
   return (
     <div className="role-list">
-      <div className="role-list-title">📋 角色列表 ({roles.length})</div>
+      <div className="role-list-title">
+        <ListIcon size={13} />
+        角色列表 ({roles.length})
+      </div>
       {roles.map((role) => (
         <div
           key={role.name}
@@ -55,6 +63,10 @@ export default function RoleList({ roles }: RoleListProps) {
           </div>
         </div>
       ))}
+      <button className="role-add-btn" onClick={onNewRole}>
+        <PlusIcon size={15} />
+        新建角色
+      </button>
     </div>
   );
 }

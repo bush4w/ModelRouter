@@ -16,6 +16,8 @@ pub struct ModelInfo {
     pub id: String,
     pub name: String,
     pub provider: String,
+    #[serde(rename = "family")]
+    pub family: String,
     #[serde(rename = "contextLength")]
     pub context_length: u32,
     pub capabilities: Vec<String>,
@@ -102,6 +104,29 @@ impl Default for AppSettings {
             learning_mode: false,
             claude_md_path: String::new(),
             language: "zh-CN".to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApiProfile {
+    pub id: String,
+    pub name: String,
+    pub keys: std::collections::HashMap<String, (String, Option<String>)>,
+    #[serde(rename = "isDefault")]
+    pub is_default: bool,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+}
+
+impl ApiProfile {
+    pub fn new(id: String, name: String) -> Self {
+        Self {
+            id,
+            name,
+            keys: std::collections::HashMap::new(),
+            is_default: false,
+            created_at: chrono::Utc::now().to_rfc3339(),
         }
     }
 }
