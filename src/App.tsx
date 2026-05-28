@@ -11,7 +11,7 @@ import { RouteIcon, RefreshIcon, GearIcon } from "./components/Icons";
 function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showNewRole, setShowNewRole] = useState(false);
-  const { roles, setRoles, settings, updateSettings } = useAppStore();
+  const { roles, setRoles, settings, updateSettings, setApiKeys } = useAppStore();
 
   useEffect(() => {
     loadInitialData();
@@ -27,6 +27,9 @@ function App() {
         const parsedRoles = await api.parseClaudeMd(defaultPath);
         setRoles(parsedRoles);
       }
+
+      const keys = await api.getApiKeys();
+      setApiKeys(keys);
     } catch (err) {
       console.error("Failed to load initial data:", err);
     }
