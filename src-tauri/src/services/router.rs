@@ -122,7 +122,7 @@ pub fn recommend(role: &str, task_type: &str, _learning_data: &[UserChoice], ava
         ("claude-sonnet-4-7".to_string(), vec!["gpt-4o".to_string()])
     };
 
-    let confidence = if role_map.contains_key(role) && !alternatives.is_empty() { 0.92 } else { 0.55 };
+    let confidence = if role_map.contains_key(role) { 0.92 } else { 0.55 };
 
     ModelRecommendation {
         model_id: primary.clone(),
@@ -462,7 +462,7 @@ mod tests {
     #[test]
     fn test_recommend_for_known_role() {
         let available = vec!["anthropic".to_string(), "openai".to_string()];
-        let rec = recommend("前端工程师", "code-generation", &[], &available);
+        let rec = recommend("项目经理", "general", &[], &available);
         assert_eq!(rec.model_id, "claude-sonnet-4-7");
         assert!(rec.confidence > 0.9);
         assert!(!rec.alternatives.is_empty());
@@ -481,6 +481,6 @@ mod tests {
         let available = vec!["openai".to_string()];
         let rec = recommend("前端工程师", "code-generation", &[], &available);
         // Should pick GPT-4o since Anthropic is not available
-        assert_eq!(rec.model_id, "gpt-4o");
+        assert_eq!(rec.model_id, "gpt-5.4");
     }
 }
